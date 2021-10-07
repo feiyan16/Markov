@@ -8,7 +8,7 @@ class State:
         self.reward = reward
         self.actions: dict = {}
         self.optimal_a = -1
-        self.j = -1
+        self.j_t = -1
 
     def add_action(self, action_id, action_s, action_prob):
         if action_id in self.actions.keys():
@@ -48,7 +48,7 @@ def read_file(filename):
 def printer(updated_states, it_t):
     print_str = "After iteration " + str(it_t) + ": "
     for s in updated_states:
-        print_str += ("(s{} a{} {:.4f}) ".format(s.id, s.optimal_a, s.j))
+        print_str += ("(s{} a{} {:.4f}) ".format(s.id, s.optimal_a, s.j_t))
     print(print_str)
 
 
@@ -56,29 +56,43 @@ def bellman_calculator(g, states):
     iteration = []
     # base cases, at t = 1
     for state in states:
+        # add Ji = ri to row at timestamp = 1
         iteration.insert(state.id, state.reward)
+        # select random action
         rand_a = random.randint(1, len(state.actions))
+        # set optimal action and j value
         state.optimal_a = rand_a
-        state.j = state.reward
+        state.j_t = state.reward
+    # print iteration
     printer(states, 1)
+
     # remaining cases from 2-20
     for t in range(1, 20):
+        # j values at timestamp = t
         iteration_t = []
         for state in states:
             max_a = -1000
+            # for (action: [(state, probability) ... ]) in {}
             for action, state_prob in state.actions.items():
-                x_val = 0
+                x_val = 0  # E(x)
+                # for (state, probability) in []
                 for sp in state_prob:
-                    prob = sp[1]
-                    j = iteration[sp[0] - 1]
-                    x_val += (prob * j)
+                    prob = sp[1]  # probability to get to state
+                    j = iteration[sp[0] - 1]  # J(state) at t-1
+                    x_val += (prob * j)  # calculate E(x)
+                # calculate max(a)
                 max_a = max(max_a, x_val)
+                # if max_a was updated, update optimal_a as well
                 if max_a == x_val:
                     state.optimal_a = action
-            state.j = state.reward + g * max_a
-            iteration_t.insert(state.id, state.j)
-        printer(states, t+1)
+            # reset J(state)
+            state.j_t = state.reward + g * max_a
+            # add j values to row t
+            iteration_t.insert(state.id, state.j_t)
+        # update "dp table" with new row t
         iteration = iteration_t.copy()
+        # print iteration t
+        printer(states, t+1)
 
 
 n = len(sys.argv)
