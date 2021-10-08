@@ -19,10 +19,14 @@ class State:
 
 
 def read_file(filename):
-    states_ = []
+    states_ = []  # stores all parse lines as states
+    # open file and read in lines
     file = open(filename, "r")
     file_data = file.readlines()
     for data in file_data:
+        # check if line is empty
+        if data.isspace() or len(data) == 0:
+            continue
         id_reward = ""
         actions = ""
         for idx in range(0, len(data)):
@@ -30,17 +34,32 @@ def read_file(filename):
                 id_reward = data[0:idx]
                 actions = data[idx:]
                 break
-        new_state = State(int(id_reward.split(" ")[0][1:]), float(id_reward.split(" ")[1]))
+        # check if split happened
+        if len(id_reward) == 0 or len(actions) == 0:
+            continue
+        id_reward = id_reward.split(" ")
+        # check if tokens have id and reward
+        if len(id_reward) < 2:
+            continue
+        # check if id is empty
+        if id_reward[0].isspace() or len(id_reward[0]) == 0:
+            continue
+        # check if reward is empty
+        if id_reward[1].isspace() or len(id_reward[1]) == 0:
+            continue
+        new_state = State(int(id_reward[0][1:]), float(id_reward[1]))
         actions = actions.split(")")
         for a in actions:
             a = a.strip()
             a = a[1:]
             a = a.split(" ")
-            if len(a) == 3:
-                action_id = a[0][1:]
-                action_s = a[1][1:]
-                action_prob = a[2]
-                new_state.add_action(int(action_id), int(action_s), float(action_prob))
+            # check if a is in format (action state probability)
+            if len(a) < 3:
+                continue
+            action_id = a[0][1:]
+            action_s = a[1][1:]
+            action_prob = a[2]
+            new_state.add_action(int(action_id), int(action_s), float(action_prob))
         states_.append(new_state)
     return states_
 
