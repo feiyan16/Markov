@@ -73,11 +73,11 @@ def printer(updated_states, it_t):
 
 
 def bellman_calculator(g, states):
-    iteration = []
+    iteration = [None] * max(state.id for state in states)
     # base cases, at t = 1
     for state in states:
         # add Ji = ri to row at timestamp = 1
-        iteration.insert(state.id, state.reward)
+        iteration[state.id - 1] = state.reward
         # select random action
         rand_a = random.randint(1, len(state.actions))
         # set optimal action and j value
@@ -89,7 +89,7 @@ def bellman_calculator(g, states):
     # remaining cases from 2-20
     for t in range(1, 20):
         # j values at timestamp = t
-        iteration_t = []
+        iteration_t = iteration.copy()
         for state in states:
             max_a = -1000
             # dict to map max_a to relevant action
@@ -101,7 +101,10 @@ def bellman_calculator(g, states):
                 for sp in state_prob:
                     prob = sp[1]  # probability to get to state
                     j = iteration[sp[0] - 1]  # J(state) at t-1
-                    x_val += (prob * j)  # calculate E(x)
+                    try:
+                        x_val += (prob * j)  # calculate E(x)
+                    except TypeError:
+                        print("s" + str(sp[0]) + " does not exists, action cannot reach it.")
                 # calculate max(a)
                 max_a = max(max_a, x_val)
                 # if max_a has been updated
@@ -112,11 +115,11 @@ def bellman_calculator(g, states):
             # reset J(state)
             state.j_t = state.reward + g * max_a
             # add j values to row t
-            iteration_t.insert(state.id, state.j_t)
+            iteration_t[state.id - 1] = state.j_t
         # update "dp table" with new row t
         iteration = iteration_t.copy()
         # print iteration t
-        printer(states, t+1)
+        printer(states, t + 1)
 
 
 n = len(sys.argv)
