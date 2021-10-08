@@ -46,7 +46,8 @@ def read_file(filename):
 
 
 def printer(updated_states, it_t):
-    print_str = "After iteration " + str(it_t) + ": "
+    print_str = ""
+    print("After iteration " + str(it_t) + ": ")
     for s in updated_states:
         print_str += ("(s{} a{} {:.4f}) ".format(s.id, s.optimal_a, s.j_t))
     print(print_str)
@@ -72,6 +73,8 @@ def bellman_calculator(g, states):
         iteration_t = []
         for state in states:
             max_a = -1000
+            # dict to map max_a to relevant action
+            max_to_a = {}
             # for (action: [(state, probability) ... ]) in {}
             for action, state_prob in state.actions.items():
                 x_val = 0  # E(x)
@@ -82,9 +85,11 @@ def bellman_calculator(g, states):
                     x_val += (prob * j)  # calculate E(x)
                 # calculate max(a)
                 max_a = max(max_a, x_val)
-                # if max_a was updated, update optimal_a as well
-                if max_a == x_val:
-                    state.optimal_a = action
+                # if max_a has been updated
+                if max_a not in max_to_a.keys():
+                    max_to_a[max_a] = action
+            # set optimal_a to final max_a
+            state.optimal_a = max_to_a[max_a]
             # reset J(state)
             state.j_t = state.reward + g * max_a
             # add j values to row t
