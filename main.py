@@ -122,12 +122,17 @@ def bellman_calculator(g, states):
         printer(states, t + 1)
 
 
-n = len(sys.argv)
-if n < 5:
-    print("python3 main.py <number of states> <max actions> <input file path> <discount factor>")
-    quit()
-elif n == 5:
-    gamma = sys.argv[4]
-    file_path = sys.argv[3]
-    all_states = read_file(file_path)
-    bellman_calculator(float(gamma), all_states)
+def main():
+    n = len(sys.argv)
+    if n < 5:
+        print("python3 main.py <number of states> <max actions> <input file path> <discount factor>")
+        quit()
+    elif n == 5:
+        gamma = sys.argv[4]
+        file_path = sys.argv[3]
+        all_states = read_file(file_path)
+        bellman_calculator(float(gamma), all_states)
+
+
+if __name__ == "__main__":
+    main()
